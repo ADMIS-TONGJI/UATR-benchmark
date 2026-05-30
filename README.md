@@ -10,10 +10,13 @@ Furthermore, the absence of a standardized evaluation benchmark in current UATR 
 In summary, our work makes the following three key contributions:
 
 • A Comprehensive Review and Taxonomy: 
+
 We conduct a systematic review of existing deep learning-based UATR methods and classify them into three categories: waveform-based methods, spectrogram-based methods, and multimodal data-based methods.
 
 • An Integrated Discussion of Core Aspects: 
+
 We provide an in-depth discussion of the fundamental principles of underwater acoustic signals, the challenges inherent in the UATR task, currently available datasets, and promising future research directions.
 
 • A Standardized Benchmark with Practical Data Partitioning: 
+
 We reproduce a suite of representative UATR methods to establish a unified benchmark for comprehensive evaluation and comparison. This benchmark incorporates optimized data partitioning strategies to ensure that recognition performance reflects real-world application scenarios.
