@@ -1,1 +1,0 @@
-使用的时候将resnet50的预训练权重放在\LOFAR+pretrained-Resnet50下
