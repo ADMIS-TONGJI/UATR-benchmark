@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
-import librosa  # 用于加载音频文件
+import librosa  
 from torch.utils.data import DataLoader
 from dataset import UnderwaterAudioDataset
 
@@ -12,7 +12,7 @@ def preprocess_acoustic_signal(audio_path, frame_size=4096, normalize=True):
     论文数据预处理步骤实现：
     1. 从音频文件加载时域连续声学信号
     2. 将时域连续声学信号分割为多帧（每帧 4096 个样本，无重叠）
-    3. 可选数据归一化（避免声纳系统配置差异导致偏差）
+    3. 可选数据归一化
     
     参数：
         audio_path: str，音频文件路径（支持librosa兼容格式，如wav、flac等）
@@ -31,12 +31,12 @@ def preprocess_acoustic_signal(audio_path, frame_size=4096, normalize=True):
     num_frames = signal_length // frame_size  # 整数除法取整
     valid_signal = continuous_signal[:num_frames * frame_size]  # 截取有效长度
     
-    # 3. 分帧处理（去掉通道维度，直接保留 (num_frames, frame_size) 形状）
+    # 3. 分帧处理
     framed_signal = valid_signal.reshape(num_frames, frame_size)  # 形状：(num_frames, frame_size)
     # framed_signal = torch.tensor(framed_signal, dtype=torch.float32)  # 不再添加通道维度
     framed_signal = torch.tensor(framed_signal, dtype=torch.float32).unsqueeze(1)  # 增加通道维度，形状：(num_frames, 1, frame_size)
     
-    # 4. 可选全局归一化（基于所有帧的统计量）
+    # 4. 可选全局归一化
     if normalize:
         mean = framed_signal.mean()
         std = framed_signal.std()
@@ -46,8 +46,6 @@ def preprocess_acoustic_signal(audio_path, frame_size=4096, normalize=True):
 
 def collate_fn(batch):
     """
-    修正：先对音频路径进行预处理，再整理批次数据
-    
     参数：
         batch: 列表，每个元素为 (audio_path, label) 元组，其中：
                - audio_path: 音频文件路径（字符串）
