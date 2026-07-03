@@ -5,7 +5,6 @@ from typing import Callable, Dict, List, Tuple
 import numpy as np
 import torch
 
-# 为避免在导入阶段失败，延迟导入 librosa/soundfile
 _librosa = None
 
 
@@ -113,10 +112,6 @@ def _apply_lmr_inplace(batch_mels: List[torch.Tensor], labels: List[int], cfg: D
 # ---------------------- SIR: simulated counterpart generation ----------------------
 
 def _generate_simulated_mel(mel: torch.Tensor, cfg: Dict) -> torch.Tensor:
-    """
-    基于原始 mel（[1, F, T]）生成“模拟域”版本，用于一致性正则。
-    轻量实现：小幅时间/频率偏移 + 轻噪声 + 轻平滑。
-    """
     x = mel.clone()
     _, F, T = x.shape
     # 幅度缩放
@@ -135,14 +130,14 @@ def _generate_simulated_mel(mel: torch.Tensor, cfg: Dict) -> torch.Tensor:
                 dt = -dt
                 x = torch.cat([x[:, :, -dt:], x[:, :, :-dt]], dim=2)
 
-    # 频率维微小移位（通过 roll 模拟）
+    # 频率维微小移位
     max_shift_f = int(F * float(cfg.get("max_freq_shift_ratio", 0.02)))
     if max_shift_f > 0:
         df = random.randint(-max_shift_f, max_shift_f)
         if df != 0:
             x = torch.roll(x, shifts=df, dims=1)
 
-    # 轻微高斯平滑（3x3 separable 近似）
+    # 轻微高斯平滑
     if bool(cfg.get("gauss_blur", True)):
         kernel = torch.tensor([0.25, 0.5, 0.25], dtype=x.dtype, device=x.device)
         # 频率方向
@@ -167,7 +162,7 @@ def _generate_simulated_mel(mel: torch.Tensor, cfg: Dict) -> torch.Tensor:
 class CollateMelSIRLMR:
     """可序列化的 collate，可用于 Windows 多进程 DataLoader。
 
-    根据配置生成 Mel 特征；训练时应用 LMR，并生成 SIR 模拟特征。
+    根据配置生成 Mel 特征；训练时应用 LMR，并生成 SIR 特征。
     """
 
     def __init__(
